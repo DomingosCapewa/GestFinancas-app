@@ -289,3 +289,4 @@ C:\Users\dscw\My Private Documents\GestFinancas-app\GestFinancas-Api\obj\Debug\n
 C:\Users\dscw\My Private Documents\GestFinancas-app\GestFinancas-Api\obj\Debug\net9.0\GestFina.FAFEBCF5.Up2Date
 C:\Users\dscw\My Private Documents\GestFinancas-app\GestFinancas-Api\obj\Debug\net9.0\GestFinancas-Api.genruntimeconfig.cache
 C:\Users\dscw\My Private Documents\GestFinancas-app\GestFinancas-Api\obj\Debug\net9.0\ref\GestFinancas-Api.dll
+C:\Users\dscw\My Private Documents\GestFinancas-app\GestFinancas-Api\obj\Debug\net9.0\GestFinancas-Api.sourcelink.json

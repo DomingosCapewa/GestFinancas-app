@@ -3,6 +3,8 @@ using GestFinancas_Api.Models;
 using Microsoft.AspNetCore.Mvc;
 
 using GestFinancas_Api.Helper;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Text;
 
 using System.IdentityModel.Tokens.Jwt;
@@ -27,11 +29,13 @@ namespace GestFinancas.Controllers
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly EnviarEmail _enviarEmail;
     private readonly IAuthenticate _authenticate;
+    private readonly IConfiguration _configuration;
 
     public UsuarioController(IUsuarioRepository usuarioRepository, IConfiguration configuration, IAuthenticate authenticate)
     {
       _usuarioRepository = usuarioRepository;
       _authenticate = authenticate;
+      _configuration = configuration;
       _enviarEmail = new EnviarEmail(configuration, _usuarioRepository);
     }
 
@@ -156,7 +160,7 @@ namespace GestFinancas.Controllers
     private string GerarToken(Usuario usuario)
     {
       var tokenHandler = new JwtSecurityTokenHandler();
-      var key = Encoding.ASCII.GetBytes("veryverycomplexkey1234567890");
+      var key = Encoding.ASCII.GetBytes(_configuration["Jwt:SecretKey"] ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "veryverycomplexkey1234567890");
       var identity = new ClaimsIdentity(new Claim[]
       {
        new Claim("role", "user"),
