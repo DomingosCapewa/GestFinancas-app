@@ -2,4 +2,7 @@ fastapi
 uvicorn[standard]
 requests
 pydantic
-google-generative-aipython-dotenv
+google-generativeai
+python-dotenv
+mysql-connector-python
+scikit-learn

@@ -22,35 +22,85 @@ namespace GestFinancas_Api.Controllers
         [HttpPost("draft")]
         public async Task<IActionResult> CreateDraft([FromBody] DraftTransaction draft)
         {
+            if (draft.Amount <= 0)
+                return BadRequest(new { message = "Valor deve ser maior que zero." });
+
+            if (string.IsNullOrWhiteSpace(draft.Description))
+                return BadRequest(new { message = "Descrição é obrigatória." });
+
+            draft.Id = Guid.NewGuid();
             draft.Confirmed = false;
+            draft.Date = DateTime.UtcNow;
+
             _db.DraftTransactions.Add(draft);
             await _db.SaveChangesAsync();
-            return Ok(draft);
+
+            return Ok(new { 
+                message = "Rascunho criado com sucesso",
+                draftId = draft.Id,
+                draft = draft 
+            });
         }
 
-        [HttpPost("propose")]
-        public IActionResult ProposeTransaction()
+        [HttpGet("drafts/{userId}")]
+        public IActionResult GetDraftsByUser(Guid userId)
         {
-            // precisa receber AiTransactionDto dto
-            return Ok(new { message = "O Julius AI sugeriu uma nova transação." });
+            var drafts = _db.DraftTransactions
+                .Where(d => d.UserId == userId && !d.Confirmed)
+                .ToList();
+            return Ok(drafts);
         }
 
         [HttpPost("confirm/{id}")]
-        public IActionResult Confirm(Guid id)
+        public async Task<IActionResult> Confirm(Guid id)
         {
-            return Ok(new { message = $"Transação {id} confirmada com sucesso." });
+            var draft = await _db.DraftTransactions.FindAsync(id);
+            if (draft == null)
+                return NotFound(new { message = "Rascunho não encontrado." });
+
+            if (draft.Confirmed)
+                return BadRequest(new { message = "Transação já foi confirmada." });
+
+            // Converter draft em transação definitiva
+            var transaction = new Transaction
+            {
+                Id = Guid.NewGuid(),
+                UserId = draft.UserId,
+                Amount = draft.Amount,
+                Description = draft.Description,
+                Category = draft.Category,
+                Type = draft.Type,
+                Date = draft.Date,
+                Source = TransactionSource.AI,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _db.Transactions.Add(transaction);
+            
+            // Marcar draft como confirmado
+            draft.Confirmed = true;
+            _db.DraftTransactions.Update(draft);
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new { 
+                message = "Transação confirmada e salva com sucesso",
+                transactionId = transaction.Id,
+                transaction = transaction 
+            });
         }
 
         [HttpPost("reject/{id}")]
-        public IActionResult Reject(Guid id)
+        public async Task<IActionResult> Reject(Guid id)
         {
-            return Ok(new { message = $"Transação {id} rejeitada com sucesso." });
-        }
+            var draft = await _db.DraftTransactions.FindAsync(id);
+            if (draft == null)
+                return NotFound(new { message = "Rascunho não encontrado." });
 
-        [HttpPost("clarify/{id}")]
-        public IActionResult Clarify(Guid id)
-        {
-            return Ok(new { message = $"Solicitação de esclarecimento para a transação {id} enviada com sucesso." });
-        }
+            _db.DraftTransactions.Remove(draft);
+            await _db.SaveChangesAsync();
+
+            return Ok(new { message = "Rascunho rejeitado e removido com sucesso." });
+            }
     }
 }
