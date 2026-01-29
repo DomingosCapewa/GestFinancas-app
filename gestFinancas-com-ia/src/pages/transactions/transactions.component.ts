@@ -36,7 +36,6 @@ export class TransactionsComponent {
     category: ''
   });
 
-  // rascunhos sugeridos pela IA
   aiDrafts = signal<DraftTransaction[]>([]);
 
   categories = signal(['Moradia', 'Alimentação', 'Contas', 'Lazer', 'Salário', 'Freelance', 'Transporte', 'Saúde', 'Outros']);

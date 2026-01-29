@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
+import { decodeToken, isTokenExpired, DecodedToken } from '../../utils/jwt.util';
 import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -13,8 +14,16 @@ export class UsuarioService {
 
   estaAutenticado(): boolean {
     const token = localStorage.getItem('token');
-    return token !== null && token !== undefined;
+    if (!token) return false;
+    return !isTokenExpired(token);
   }
+
+  getUsuarioLogado(): DecodedToken | null {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    return decodeToken(token);
+  }
+
   autorizar(): boolean {
     localStorage.setItem('token', 'true');
     return true;

@@ -16,7 +16,8 @@ export class DashboardComponent {
   private transactionService = inject(TransactionService);
   private usuarioService = inject(UsuarioService);
   
-  userName = signal('Domingos');
+  private usuarioLogado = this.usuarioService.getUsuarioLogado();
+  userName = signal(this.usuarioLogado?.name || 'Usuário');
   transactions = this.transactionService.transactions;
   
   recentTransactions = computed(() => this.transactions().slice(0, 5));

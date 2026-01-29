@@ -8,6 +8,6 @@ export interface TransactionForm {
 
 export interface DraftTransaction extends TransactionForm {
   id?: string;
-  confidence?: number; // opcional: score vindo do assistente
-  note?: string; // observação ou origem do rascunho
+  confidence?: number;
+  note?: string; 
 }

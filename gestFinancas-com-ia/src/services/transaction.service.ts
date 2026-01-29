@@ -1,5 +1,8 @@
 
 import { Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../src/environments/environment';
+import { Observable } from 'rxjs';
 
 export interface Transaction {
   id: number;
@@ -26,20 +29,37 @@ export interface DraftTransaction extends AddTransactionArgs {
   providedIn: 'root'
 })
 export class TransactionService {
-  readonly transactions = signal<Transaction[]>([
-    { id: 1, description: 'Salário Mensal', amount: 5000, date: '2024-07-01', type: 'income', category: 'Salário' },
-    { id: 2, description: 'Aluguel', amount: 1500, date: '2024-07-05', type: 'expense', category: 'Moradia' },
-    { id: 3, description: 'Supermercado', amount: 450, date: '2024-07-08', type: 'expense', category: 'Alimentação' },
-    { id: 4, description: 'Freelance Website', amount: 800, date: '2024-07-10', type: 'income', category: 'Freelance' },
-    { id: 5, description: 'Conta de Luz', amount: 120, date: '2024-07-12', type: 'expense', category: 'Contas' },
-    { id: 6, description: 'Jantar fora', amount: 85, date: '2024-07-15', type: 'expense', category: 'Lazer' },
-    { id: 7, description: 'Transporte', amount: 150, date: '2024-07-18', type: 'expense', category: 'Transporte' },
-    { id: 8, description: 'Farmácia', amount: 60, date: '2024-07-22', type: 'expense', category: 'Saúde' },
-  ]);
-
+  private apiUrl = `${environment.apiURL}/api/Transaction`;
+  
+  readonly transactions = signal<Transaction[]>([]);
   readonly draftTransactions = signal<DraftTransaction[]>([]);
 
-  addTransaction(args: AddTransactionArgs) {
+  constructor(private http: HttpClient) {
+    this.loadTransactions();
+  }
+
+  loadTransactions(): void {
+    this.http.get<any>(`${this.apiUrl}`).subscribe({
+      next: (response) => {
+        const transactionsData = Array.isArray(response) ? response : response?.data || [];
+        const mappedTransactions = transactionsData.map((t: any) => ({
+          id: t.id || t.Id,
+          description: t.description || t.Description,
+          amount: t.amount || t.Amount,
+          date: t.date || t.Date,
+          type: (t.type || t.Type)?.toLowerCase() === 'income' ? 'income' : 'expense',
+          category: t.category || t.Category || 'Sem categoria'
+        }));
+        this.transactions.set(mappedTransactions);
+      },
+      error: (error) => {
+        console.error('Erro ao carregar transações:', error);
+        this.transactions.set([]);
+      }
+    });
+  }
+
+  addTransaction(args: AddTransactionArgs): void {
     const newTransaction: Transaction = {
       id: Math.max(...this.transactions().map(t => t.id), 0) + 1,
       description: args.description,
@@ -48,12 +68,41 @@ export class TransactionService {
       type: args.type,
       category: args.category
     };
-    this.transactions.update(transactions => [...transactions, newTransaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+
+    // Enviar para o backend
+    const payload = {
+      description: newTransaction.description,
+      amount: newTransaction.amount,
+      date: newTransaction.date,
+      type: newTransaction.type === 'income' ? 'Income' : 'Expense',
+      category: newTransaction.category
+    };
+
+    this.http.post(`${this.apiUrl}`, payload).subscribe({
+      next: (response: any) => {
+        const createdTransaction: Transaction = {
+          id: response?.data?.id || response?.id || newTransaction.id,
+          description: newTransaction.description,
+          amount: newTransaction.amount,
+          date: newTransaction.date,
+          type: newTransaction.type,
+          category: newTransaction.category
+        };
+        this.transactions.update(transactions => 
+          [...transactions, createdTransaction].sort((a, b) => 
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+          )
+        );
+      },
+      error: (error) => {
+        console.error('Erro ao criar transação:', error);
+      }
+    });
   }
 
   createDraftTransaction(args: AddTransactionArgs) {
     const newDraft: DraftTransaction = {
-      id: Date.now(), // Use timestamp for a simple unique ID
+      id: Date.now(),
       ...args
     };
     this.draftTransactions.update(drafts => [...drafts, newDraft]);
@@ -71,13 +120,27 @@ export class TransactionService {
     this.draftTransactions.update(drafts => drafts.filter(d => d.id !== draftId));
   }
   
-  updateTransaction(updatedTransaction: Transaction) {
-      this.transactions.update(transactions => 
-        transactions.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
-      );
+  updateTransaction(updatedTransaction: Transaction): void {
+    this.http.put(`${this.apiUrl}/${updatedTransaction.id}`, updatedTransaction).subscribe({
+      next: () => {
+        this.transactions.update(transactions => 
+          transactions.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
+        );
+      },
+      error: (error) => {
+        console.error('Erro ao atualizar transação:', error);
+      }
+    });
   }
 
-  deleteTransaction(id: number) {
-      this.transactions.update(transactions => transactions.filter(t => t.id !== id));
+  deleteTransaction(id: number): void {
+    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+      next: () => {
+        this.transactions.update(transactions => transactions.filter(t => t.id !== id));
+      },
+      error: (error) => {
+        console.error('Erro ao deletar transação:', error);
+      }
+    });
   }
 }
