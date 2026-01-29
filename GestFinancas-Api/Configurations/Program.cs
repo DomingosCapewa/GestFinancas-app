@@ -7,8 +7,11 @@ using GestFinancas_Api.Helper;
 using GestFinancas_Api.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "veryverycomplexkey1234567890";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
   options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
@@ -34,7 +37,7 @@ builder.Services.AddAuthentication(options =>
     ValidateAudience = false,
     ValidateLifetime = true,
     ValidateIssuerSigningKey = true,
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("veryverycomplexkey1234567890")),
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
   };
 });
 

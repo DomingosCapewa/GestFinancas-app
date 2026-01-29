@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "UFe3vpVjCpk=",
+  "dgSpecHash": "0AlmXy3AeL4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+  "projectFilePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\dscw\\.nuget\\packages\\azure.core\\1.36.0\\azure.core.1.36.0.nupkg.sha512",
     "C:\\Users\\dscw\\.nuget\\packages\\azure.identity\\1.10.4\\azure.identity.1.10.4.nupkg.sha512",
@@ -93,10 +93,10 @@
     {
       "code": "NU1902",
       "level": "Warning",
-      "message": "Package 'Azure.Identity' 1.10.4 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9",
-      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+      "message": "O pacote 'Azure.Identity' 1.10.4 tem uma moderado vulnerabilidade de gravidade conhecida, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9",
+      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+      "filePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
       "libraryId": "Azure.Identity",
       "targetGraphs": [
         "net9.0"
@@ -105,10 +105,10 @@
     {
       "code": "NU1902",
       "level": "Warning",
-      "message": "Package 'Azure.Identity' 1.10.4 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-wvxc-855f-jvrv",
-      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+      "message": "O pacote 'Azure.Identity' 1.10.4 tem uma moderado vulnerabilidade de gravidade conhecida, https://github.com/advisories/GHSA-wvxc-855f-jvrv",
+      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+      "filePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
       "libraryId": "Azure.Identity",
       "targetGraphs": [
         "net9.0"
@@ -117,10 +117,10 @@
     {
       "code": "NU1902",
       "level": "Warning",
-      "message": "Package 'Microsoft.Identity.Client' 4.57.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9",
-      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+      "message": "O pacote 'Microsoft.Identity.Client' 4.57.0 tem uma moderado vulnerabilidade de gravidade conhecida, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9",
+      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+      "filePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
       "libraryId": "Microsoft.Identity.Client",
       "targetGraphs": [
         "net9.0"
@@ -129,10 +129,10 @@
     {
       "code": "NU1901",
       "level": "Warning",
-      "message": "Package 'Microsoft.Identity.Client' 4.57.0 has a known low severity vulnerability, https://github.com/advisories/GHSA-x674-v45j-fwxw",
-      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+      "message": "O pacote 'Microsoft.Identity.Client' 4.57.0 tem uma baixa vulnerabilidade de gravidade conhecida, https://github.com/advisories/GHSA-x674-v45j-fwxw",
+      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
+      "filePath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
       "libraryId": "Microsoft.Identity.Client",
       "targetGraphs": [
         "net9.0"

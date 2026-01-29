@@ -7,12 +7,12 @@ namespace GestFinancas_Api.Models
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-        public DbSet<Usuario> Usuario { get; set; } = null!;
-        public DbSet<Transaction> Transaction { get; set; } = null!;
-        public DbSet<Transaction> Transactions { get; set; }
-
+        public DbSet<Usuario> Usuarios { get; set; } = null!;
+        // compatibilidade com código existente que usa `Usuario` (singular)
+        public DbSet<Usuario> Usuario => Usuarios;
+        public DbSet<Transaction> Transactions { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
-        public DbSet<DraftTransaction> DraftTransaction { get; set; } = null!;
+        public DbSet<DraftTransaction> DraftTransactions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
