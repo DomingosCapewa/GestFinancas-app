@@ -27,6 +27,4 @@ dist-ssr
 .env
 .env.*
 
-# Ignore signup page source (do not push user signup code if desired)
-src/components/ai-agent/
 src/environments/
