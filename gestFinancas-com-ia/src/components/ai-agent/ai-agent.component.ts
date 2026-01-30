@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { JuliusAgentService, DraftTransaction } from '../../services/julius-agent.service';
+import { UsuarioService } from '../../services/auth/usuario.service';
 
 export interface Message {
   role: 'user' | 'model';
@@ -16,6 +17,7 @@ export interface Message {
 })
 export class AiAgentComponent implements OnInit {
   private juliusService = inject(JuliusAgentService);
+  private usuarioService = inject(UsuarioService);
   
   drafts = signal<DraftTransaction[]>([]);
   
@@ -27,14 +29,14 @@ export class AiAgentComponent implements OnInit {
   errorMessage = signal<string>('');
   successMessage = signal<string>('');
   
-  // ID do usuário (pegar do localStorage ou auth service)
-  // NOTA: Backend espera GUID. Ajuste para o ID real do usuário logado
-  private userId: string = '00000000-0000-0000-0000-000000000002';
+  private userId: string = '';
 
   constructor() {
-    const stored = localStorage.getItem('userId');
-    if (stored) {
-      this.userId = stored;
+    const usuarioLogado = this.usuarioService.getUsuarioLogado();
+    if (usuarioLogado?.id) {
+      this.userId = usuarioLogado.id;
+    } else {
+      console.error('Usuário não autenticado');
     }
   }
 
@@ -43,7 +45,7 @@ export class AiAgentComponent implements OnInit {
   }
 
   loadDrafts() {
-    console.log('🔍 Carregando drafts para userId:', this.userId);
+    console.log('Carregando drafts para userId:', this.userId);
     this.juliusService.getDraftsByUser(this.userId).subscribe({
       next: (drafts) => {
         console.log('Drafts recebidos:', drafts);

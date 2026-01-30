@@ -10,6 +10,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace GestFinancas_Api.Controllers
 {
     [ApiController]
+    [Route("ai/Transaction")]
     [Route("api/Transaction")]
     public class TransactionController : ControllerBase
     {
@@ -23,12 +24,18 @@ namespace GestFinancas_Api.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [SwaggerOperation(Summary = "Obtém todas as transações do usuário logado")]
         public IActionResult GetUserTransactions()
         {
-            // TODO: Implementar filtro por usuário quando o tipo de UserId for consistente
-            // Por enquanto, retorna todas as transações
+            var userIdString = User.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+            }
+
             var transactions = _db.Transactions
+                .Where(t => t.UserId == userId)
                 .OrderByDescending(t => t.Date)
                 .ToList();
 
@@ -36,9 +43,16 @@ namespace GestFinancas_Api.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [SwaggerOperation(Summary = "Cria uma nova transação para o usuário logado")]
         public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionDto dto)
         {
+            var userIdString = User.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+            }
+
             if (dto.Amount <= 0)
                 return BadRequest(new { message = "Valor deve ser maior que zero." });
 
@@ -48,7 +62,7 @@ namespace GestFinancas_Api.Controllers
             var transaction = new Transaction
             {
                 Id = Guid.NewGuid(),
-                UserId = Guid.NewGuid(), // TODO: Usar o ID do usuário logado
+                UserId = userId,
                 Amount = dto.Amount,
                 Description = dto.Description,
                 Category = dto.Category,
@@ -93,7 +107,7 @@ namespace GestFinancas_Api.Controllers
 
         [HttpGet("drafts/{userId}")]
         [SwaggerOperation(Summary = "Obtém todos os rascunhos de transações para um usuário específico")]
-        public IActionResult GetDraftsByUser(Guid userId)
+        public IActionResult GetDraftsByUser(int userId)
         {
             var drafts = _db.DraftTransactions
                 .Where(d => d.UserId == userId && !d.Confirmed)
@@ -102,50 +116,93 @@ namespace GestFinancas_Api.Controllers
         }
 
         [HttpPost("confirm/{id}")]
+        [Authorize]
         [SwaggerOperation(Summary = "Confirma um rascunho de transação e cria a transação definitiva")]
         public async Task<IActionResult> Confirm(Guid id)
         {
+            _logger.LogInformation($"Tentando confirmar draft com ID: {id}");
+            
+            var userIdString = User.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+            }
+            
             var draft = await _db.DraftTransactions.FindAsync(id);
             if (draft == null)
+            {
+                _logger.LogWarning($"Rascunho não encontrado: {id}");
                 return NotFound(new { message = "Rascunho não encontrado." });
+            }
+            
+            if (draft.UserId != userId)
+            {
+                _logger.LogWarning($"Usuário {userId} tentou confirmar draft de outro usuário: {draft.UserId}");
+                return Forbid();
+            }
 
             if (draft.Confirmed)
-                return BadRequest(new { message = "Transação já foi confirmada." });
-
-            var transaction = new Transaction
             {
-                Id = Guid.NewGuid(),
-                UserId = draft.UserId,
-                Amount = draft.Amount,
-                Description = draft.Description,
-                Category = draft.Category,
-                Type = draft.Type,
-                Date = draft.Date,
-                Source = TransactionSource.AI,
-                CreatedAt = DateTime.UtcNow
-            };
+                _logger.LogWarning($"Transação já confirmada: {id}");
+                return BadRequest(new { message = "Transação já foi confirmada." });
+            }
 
-            _db.Transactions.Add(transaction);
-            
-            draft.Confirmed = true;
-            _db.DraftTransactions.Update(draft);
+            try
+            {
+                var transaction = new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = draft.UserId,
+                    Amount = draft.Amount,
+                    Description = draft.Description,
+                    Category = draft.Category,
+                    Type = draft.Type,
+                    Date = draft.Date,
+                    Source = TransactionSource.AI,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            await _db.SaveChangesAsync();
+                _db.Transactions.Add(transaction);
+                
+                draft.Confirmed = true;
+                _db.DraftTransactions.Update(draft);
 
-            return Ok(new { 
-                message = "Transação confirmada e salva com sucesso",
-                transactionId = transaction.Id,
-                transaction = transaction 
-            });
+                await _db.SaveChangesAsync();
+
+                _logger.LogInformation($"Transação confirmada com sucesso: {transaction.Id}");
+
+                return Ok(new { 
+                    message = "Transação confirmada e salva com sucesso",
+                    transactionId = transaction.Id,
+                    transaction = transaction 
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Erro ao confirmar transação: {id}");
+                return StatusCode(500, new { message = "Erro ao confirmar transação.", error = ex.Message });
+            }
         }
 
         [HttpPost("reject/{id}")]
+        [Authorize]
         [SwaggerOperation(Summary = "Rejeita um rascunho de transação e o remove")]
         public async Task<IActionResult> Reject(Guid id)
         {
+            var userIdString = User.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+            }
+            
             var draft = await _db.DraftTransactions.FindAsync(id);
             if (draft == null)
                 return NotFound(new { message = "Rascunho não encontrado." });
+            
+            if (draft.UserId != userId)
+            {
+                return Forbid();
+            }
 
             _db.DraftTransactions.Remove(draft);
             await _db.SaveChangesAsync();

@@ -1,10 +1,10 @@
-
-import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AiAgentComponent } from '../../components/ai-agent/ai-agent.component';
 import { TransactionService, Transaction } from '../../services/transaction.service';
 import { UsuarioService } from '../../services/auth/usuario.service';
+import { decodeToken } from '../../utils/jwt.util';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,6 +17,21 @@ export class DashboardComponent {
   private usuarioService = inject(UsuarioService);
   
   private usuarioLogado = this.usuarioService.getUsuarioLogado();
+  
+  // Debug: Log do token
+  constructor(private router: Router) {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      const decodedDebug = decodeToken(token);
+      console.log('[DEBUG] Token decodificado:', decodedDebug);
+      console.log('[DEBUG] Nome do usuário:', decodedDebug?.name);
+    }
+    
+    if (!this.usuarioService.estaAutenticado()) {
+      this.router.navigate(['/login']);
+    }
+  }
+  
   userName = signal(this.usuarioLogado?.name || 'Usuário');
   transactions = this.transactionService.transactions;
   
@@ -35,12 +50,6 @@ export class DashboardComponent {
   );
 
   balance = computed(() => this.totalIncome() - this.totalExpense());
-  
-  constructor(private router: Router) {
-    if (!this.usuarioService.estaAutenticado()) {
-      this.router.navigate(['/login']);
-    }
-  }
   
   logout() {
     this.usuarioService.logout();
