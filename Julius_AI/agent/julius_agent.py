@@ -45,23 +45,23 @@ JULIUS: <sua frase sarcÃ¡stica sobre o gasto>
         # --- FLUXO: CONFIRMAR ---
         if msg_upper == "CONFIRMAR":
             if user_id not in pending_drafts:
-                return "Julius: Confirmar o quÃª? VocÃª nÃ£o me deu nenhum recibo ainda!"
+                return "Julius: Confirmar o quê? Você não me deu nenhum recibo ainda!"
             
             draft_info = pending_drafts[user_id]
             try:
                 confirm_transaction(draft_info["draft_id"], token)
                 amount = draft_info["amount"]
                 del pending_drafts[user_id]
-                return f"Julius: TÃ¡ bem, tÃ¡ bem... Registrei esses R$ {amount:.2f}. Espero que vocÃª tenha o cupom fiscal!"
+                return f"Julius: Tá bem, tá bem... Registrei esses R$ {amount:.2f}. Espero que você tenha o cupom fiscal!"
             except Exception as e:
-                return f"Julius: O sistema tÃ¡ fora do ar. Aposto que nÃ£o pagaram a conta de luz! ({str(e)})"
+                return f"Julius: O sistema tá fora do ar. Aposto que não pagaram a conta de luz! ({str(e)})"
 
         # --- FLUXO: CANCELAR ---
         if msg_upper == "CANCELAR":
             if user_id in pending_drafts:
                 del pending_drafts[user_id]
-                return "Julius: SÃ¡bia decisÃ£o! Economizou 100% de desconto nÃ£o comprando nada!"
-            return "Julius: NÃ£o tem nada para cancelar aqui, Chris."
+                return "Julius: Sábia decisão! Economizou 100% de desconto não comprando nada!"
+            return "Julius: Não tem nada para cancelar aqui, Chris."
 
         # --- FLUXO: GERAR RESPOSTA ---
         prompt = f"{self.system_prompt}\nUsuÃ¡rio: {message}"
@@ -75,11 +75,11 @@ JULIUS: <sua frase sarcÃ¡stica sobre o gasto>
             return f"Julius: Ih, deu erro na API. Isso deve ser caro... Erro: {str(e)}"
 
         # --- PARSEAR DADOS ---
-        # Regex melhorado para aceitar vÃ­rgula ou ponto no valor
+        # Regex melhorado para aceitar vírgula ou ponto no valor
         valor_match = re.search(r'VALOR:\s*(\d+(?:[.,]\d+)?)', text)
-        categoria_match = re.search(r'CATEGORIA:\s*(Transporte|AlimentaÃ§Ã£o|Lazer|Outros)', text, re.IGNORECASE)
+        categoria_match = re.search(r'CATEGORIA:\s*(Transporte|Alimentação|Lazer|Outros)', text, re.IGNORECASE)
         tipo_match = re.search(r'TIPO:\s*(\w+)', text)
-        julius_match = re.search(r'JULIUS:\s*(.+)', text, re.IGNORECASE | re.DOTALL)
+        julius_match = re.search(r'JULIUS:\s*(.+?)(?:\n|$)', text, re.IGNORECASE)
 
         if valor_match and categoria_match:
             amount = float(valor_match.group(1).replace(',', '.'))
@@ -94,7 +94,7 @@ JULIUS: <sua frase sarcÃ¡stica sobre o gasto>
             except (ValueError, TypeError):
                 user_id_int = 1  # Default para testes
             
-            # Type deve ser nÃºmero: 0=Income, 1=Expense
+            # Type deve ser número: 0=Income, 1=Expense
             type_value = 1 if tx_type == "Expense" else 0
             
             draft_data = {
@@ -113,7 +113,8 @@ JULIUS: <sua frase sarcÃ¡stica sobre o gasto>
                     "draft_id": result.get("draftId"),
                     "amount": amount
                 }
-                return f"{julius_fala}\n\n R$ {amount:.2f} | {category}\n\nClique no botão 'Confirmar' ou 'Rejeitar' abaixo."
+                # Retornar apenas a mensagem do Julius, sem os marcadores
+                return f"Julius: {julius_fala}\n\n💰 R$ {amount:.2f} | {category}\n\n✅ Draft criado! Digite CONFIRMAR para salvar ou CANCELAR para desistir."
             except Exception as e:
                 return f"Julius: Tentei salvar mas o servidor soltou um erro: {str(e)}"
         return text
