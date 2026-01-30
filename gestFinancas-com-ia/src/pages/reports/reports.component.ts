@@ -1,5 +1,5 @@
 
-import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TransactionService, Transaction } from '../../services/transaction.service';
@@ -17,9 +17,14 @@ interface CategorySpending {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, RouterLinkActive]
 })
-export class ReportsComponent {
+export class ReportsComponent implements OnInit {
   private transactionService = inject(TransactionService);
   private router = inject(Router);
+
+  ngOnInit(): void {
+    // Recarregar transações quando o componente for inicializado
+    this.transactionService.loadTransactions();
+  }
   
   userName = signal('Domingos');
   transactions = this.transactionService.transactions;

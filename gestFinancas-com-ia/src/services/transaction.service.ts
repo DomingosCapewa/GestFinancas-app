@@ -35,7 +35,9 @@ export class TransactionService {
   readonly draftTransactions = signal<DraftTransaction[]>([]);
 
   constructor(private http: HttpClient) {
-    this.loadTransactions();
+    // Não carregar automaticamente no constructor
+    // Os componentes devem chamar loadTransactions() no ngOnInit
+    // para garantir que o token JWT já esteja disponível
   }
 
   loadTransactions(): void {

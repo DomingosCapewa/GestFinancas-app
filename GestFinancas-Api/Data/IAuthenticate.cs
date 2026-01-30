@@ -7,6 +7,6 @@ namespace GestFinancas_Api.Data
     Task<bool> AuthenticateAscync(string email, string senha);
     Task<bool> usuarioExiste(string email);
 
-    public string GenerateToken(int id, string email);
+    Task<string> GenerateToken(int id, string email);
   }
 }

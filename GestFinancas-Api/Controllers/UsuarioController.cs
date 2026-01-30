@@ -74,7 +74,7 @@ namespace GestFinancas.Controllers
       if (usuario == null)
         return NotFound(new { message = "Usuário não encontrado." });
 
-      var token = _authenticate.GenerateToken(usuario.Id, usuario.Email);
+      var token = await _authenticate.GenerateToken(usuario.Id, usuario.Email);
       var userToken = new UserToken { Token = token };
 
       return Ok(new { message = "Login realizado com sucesso", data = userToken });
@@ -109,7 +109,7 @@ namespace GestFinancas.Controllers
         return BadRequest(new { message = "Erro ao cadastrar usuário." });
       }
 
-      var token = _authenticate.GenerateToken(usuario.Id, usuario.Email);
+      var token = await _authenticate.GenerateToken(usuario.Id, usuario.Email);
       var userToken = new UserToken { Token = token };
 
       return Ok(new { message = "Usuário cadastrado com sucesso", data = userToken });

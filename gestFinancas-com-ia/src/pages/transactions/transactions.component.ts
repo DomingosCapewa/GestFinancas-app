@@ -1,5 +1,5 @@
 
-import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,9 +12,14 @@ import { TransactionForm, DraftTransaction } from '../../models/transactions';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule]
 })
-export class TransactionsComponent {
+export class TransactionsComponent implements OnInit {
   private transactionService = inject(TransactionService);
   private router = inject(Router);
+
+  ngOnInit(): void {
+    // Recarregar transações quando o componente for inicializado
+    this.transactionService.loadTransactions();
+  }
 
   userName = signal('Domingos');
   isModalOpen = signal(false);

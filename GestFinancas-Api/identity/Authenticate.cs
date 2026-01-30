@@ -60,8 +60,11 @@ namespace GestFinancas_Api.Identity
           .AnyAsync(u => u.Email.ToLower() == email.ToLower());
     }
 
-    public string GenerateToken(int id, string email)
+    public async Task<string> GenerateToken(int id, string email)
     {
+      // Buscar o usuário para obter o nome
+      var usuario = await _context.Usuario.FindAsync(id);
+      
       var secretKey = _configuration["Jwt:SecretKey"];
       if (string.IsNullOrEmpty(secretKey))
         throw new InvalidOperationException("Jwt:SecretKey não está configurada em appsettings.json");
@@ -73,6 +76,8 @@ namespace GestFinancas_Api.Identity
       {
         new Claim("id", id.ToString()),
         new Claim("email", email),
+        new Claim("name", usuario?.Nome ?? "Usuário"),
+        new Claim(ClaimTypes.Name, usuario?.Nome ?? "Usuário"),
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
       };
 

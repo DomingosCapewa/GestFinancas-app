@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AiAgentComponent } from '../../components/ai-agent/ai-agent.component';
@@ -12,27 +12,32 @@ import { decodeToken } from '../../utils/jwt.util';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, RouterLinkActive, AiAgentComponent]
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   private transactionService = inject(TransactionService);
   private usuarioService = inject(UsuarioService);
   
-  private usuarioLogado = this.usuarioService.getUsuarioLogado();
-  
-  // Debug: Log do token
   constructor(private router: Router) {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      const decodedDebug = decodeToken(token);
-      console.log('[DEBUG] Token decodificado:', decodedDebug);
-      console.log('[DEBUG] Nome do usuário:', decodedDebug?.name);
-    }
-    
     if (!this.usuarioService.estaAutenticado()) {
       this.router.navigate(['/login']);
     }
   }
+
+  userName = signal<string>('Domingos');
   
-  userName = signal(this.usuarioLogado?.name || 'Usuário');
+  ngOnInit(): void {
+    const usuarioAtualizado = this.usuarioService.getUsuarioLogado();
+    console.log('[Dashboard] Usuário logado:', usuarioAtualizado);
+    
+    if (usuarioAtualizado?.name) {
+      this.userName.set(usuarioAtualizado.name);
+      console.log('[Dashboard] Nome do usuário atualizado:', usuarioAtualizado.name);
+    } else {
+      console.warn('[Dashboard] Nome do usuário não encontrado no token');
+    }
+    
+    // Recarregar transações quando o dashboard for inicializado
+    this.transactionService.loadTransactions();
+  }
   transactions = this.transactionService.transactions;
   
   recentTransactions = computed(() => this.transactions().slice(0, 5));
