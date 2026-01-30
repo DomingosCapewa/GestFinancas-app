@@ -8,6 +8,8 @@ using GestFinancas_Api.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System;
+using System.Security.Cryptography;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,8 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+  var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? "veryverycomplexkey1234567890";
+  
   options.RequireHttpsMetadata = false;
   options.SaveToken = true;
   options.TokenValidationParameters = new TokenValidationParameters
@@ -45,7 +49,11 @@ builder.Services.AddCors(options =>
 {
   options.AddPolicy("AllowLocalDev", policy =>
   {
-    policy.WithOrigins("http://localhost:3000", "http://localhost:4200")
+    policy.WithOrigins(
+            "http://localhost:3000", 
+            "http://localhost:4200",
+            "http://localhost:5282",
+            "https://localhost:5282")
           .AllowAnyMethod()
           .AllowAnyHeader()
           .AllowCredentials();
@@ -65,15 +73,37 @@ builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(options =>
 {
   options.EnableAnnotations();
-  options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+  options.SwaggerDoc("v1", new OpenApiInfo
   {
     Title = "GestFinancas API",
     Version = "v1",
     Description = "API para gerenciamento de usuários e finanças",
-    Contact = new Microsoft.OpenApi.Models.OpenApiContact
+    Contact = new OpenApiContact
     {
       Name = "Suporte",
       Email = "equipe.gest.financas@gmail.com"
+    }
+  });
+  
+  options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+  {
+    Description = @"JWT Authorization header usando Bearer.
+                    Entre com 'Bearer ' [espaço] então coloque seu token.
+                    Exemplo: 'Bearer 12345abcdef'",
+    Name = "Authorization",
+    In = ParameterLocation.Header,
+    Type = SecuritySchemeType.ApiKey,
+    Scheme = "Bearer"
+  });
+  
+  options.AddSecurityRequirement(new OpenApiSecurityRequirement
+  {
+    {
+      new OpenApiSecurityScheme
+      {
+        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+      },
+      Array.Empty<string>()
     }
   });
 });

@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 from agent.julius_agent import JuliusAgent
 import os
 
@@ -22,7 +23,8 @@ agent = JuliusAgent()
 class UserMessage(BaseModel):
     message: str
     user_id: str
+    token: Optional[str] = None  # Token JWT opcional
 
 @app.post("/chat")
 def chat(msg: UserMessage):
-    return {"response": agent.chat(msg.message, msg.user_id)}
+    return {"response": agent.chat(msg.message, msg.user_id, msg.token)}

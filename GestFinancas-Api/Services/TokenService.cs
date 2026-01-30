@@ -25,7 +25,7 @@ namespace GestFinancas.Services
         Subject = new ClaimsIdentity(new Claim[]
           {
                     new Claim("id", usuario.Id.ToString()),
-                    new Claim(ClaimTypes.Name, usuario.Nome),
+                    new Claim("name", usuario.Nome), new Claim(ClaimTypes.Name, usuario.Nome),
                     new Claim(ClaimTypes.Email, usuario.Email)
           }),
         Expires = DateTime.UtcNow.AddHours(3),
@@ -58,3 +58,5 @@ namespace GestFinancas.Services
 //     return token;
 //   }
 // }
+
+

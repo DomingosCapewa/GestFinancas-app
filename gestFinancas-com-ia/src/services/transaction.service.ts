@@ -42,14 +42,27 @@ export class TransactionService {
     this.http.get<any>(`${this.apiUrl}`).subscribe({
       next: (response) => {
         const transactionsData = Array.isArray(response) ? response : response?.data || [];
-        const mappedTransactions = transactionsData.map((t: any) => ({
-          id: t.id || t.Id,
-          description: t.description || t.Description,
-          amount: t.amount || t.Amount,
-          date: t.date || t.Date,
-          type: (t.type || t.Type)?.toLowerCase() === 'income' ? 'income' : 'expense',
-          category: t.category || t.Category || 'Sem categoria'
-        }));
+        const mappedTransactions = transactionsData.map((t: any) => {
+          // Backend retorna Type como número: 0 = Income, 1 = Expense
+          let type: 'income' | 'expense' = 'expense';
+          
+          if (typeof t.type === 'number' || typeof t.Type === 'number') {
+            const typeValue = t.type ?? t.Type;
+            type = typeValue === 0 ? 'income' : 'expense';
+          } else if (typeof t.type === 'string' || typeof t.Type === 'string') {
+            const typeStr = (t.type || t.Type)?.toLowerCase();
+            type = typeStr === 'income' || typeStr === '0' ? 'income' : 'expense';
+          }
+
+          return {
+            id: t.id || t.Id,
+            description: t.description || t.Description,
+            amount: t.amount || t.Amount,
+            date: t.date || t.Date,
+            type: type,
+            category: t.category || t.Category || 'Sem categoria'
+          };
+        });
         this.transactions.set(mappedTransactions);
       },
       error: (error) => {
