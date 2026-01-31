@@ -19,6 +19,11 @@ namespace GestFinancas_Api.Models
     public string? SenhaHash { get; set; } 
     public string? SenhaSalt { get; set; }
 
+    public string Role { get; set; } = "User";
+
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+
     public bool IsValid()
     {
       return !string.IsNullOrEmpty(Email) && !string.IsNullOrEmpty(Senha);

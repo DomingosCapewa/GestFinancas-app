@@ -5,10 +5,12 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
+
 using GestFinancas_Api.Data;
 using GestFinancas_Api.Models;
 
@@ -62,7 +64,7 @@ namespace GestFinancas_Api.Identity
 
     public async Task<string> GenerateToken(int id, string email)
     {
-      // Buscar o usuário para obter o nome
+      
       var usuario = await _context.Usuario.FindAsync(id);
       
       var secretKey = _configuration["Jwt:SecretKey"];
@@ -78,6 +80,7 @@ namespace GestFinancas_Api.Identity
         new Claim("email", email),
         new Claim("name", usuario?.Nome ?? "Usuário"),
         new Claim(ClaimTypes.Name, usuario?.Nome ?? "Usuário"),
+        new Claim(ClaimTypes.Role, usuario?.Role ?? "User"),
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
       };
 

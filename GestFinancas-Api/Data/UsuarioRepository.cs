@@ -97,6 +97,27 @@ public async Task<Usuario> BuscarUsuarioPorToken(string token)
         
     }
 
+    public async Task<bool> ExisteAdminAsync()
+    {
+      return await _context.Usuario
+          .AnyAsync(u => u.Role == "Admin");
+    }
+
+    public async Task<bool> PromoverUsuarioAdminAsync(string email)
+    {
+      var usuario = await _context.Usuario
+          .FirstOrDefaultAsync(u => u.Email == email);
+
+      if (usuario == null)
+      {
+        return false;
+      }
+
+      usuario.Role = "Admin";
+      await _context.SaveChangesAsync();
+      return true;
+    }
+
     //   public async Task<int> DeleteUsuarioAsync(int id)
     //   {
     //     var usuario = await _context.Usuarios

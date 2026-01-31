@@ -1,10 +1,12 @@
+using GestFinancas_Api.Models;
+using GestFinancas_Api.Data;
+
 using System.Net;
 using System.Net.Mail;
 using System.Text;
-using GestFinancas_Api.Models;
-using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
-using GestFinancas_Api.Data;
+
+using Microsoft.Extensions.Configuration;
 
 namespace GestFinancas_Api.Helper
 {

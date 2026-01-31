@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj": {}
+    "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj": {
+    "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
+        "projectUniqueName": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
         "projectName": "GestFinancas-Api",
-        "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
+        "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
         "packagesPath": "C:\\Users\\dscw\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\obj\\",
+        "outputPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\dscw\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -44,6 +44,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "AspNetCoreRateLimit": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
             "Azure.Identity": {
               "target": "Package",
               "version": "[1.10.4, )"

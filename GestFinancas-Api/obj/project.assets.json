@@ -2,6 +2,24 @@
   "version": 3,
   "targets": {
     "net9.0": {
+      "AspNetCoreRateLimit/5.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Abstractions": "6.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "6.0.3",
+          "Microsoft.Extensions.Options": "6.0.0",
+          "Newtonsoft.Json": "13.0.2"
+        },
+        "compile": {
+          "lib/net6.0/AspNetCoreRateLimit.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/AspNetCoreRateLimit.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "Azure.Core/1.36.0": {
         "type": "package",
         "dependencies": {
@@ -1629,6 +1647,18 @@
     }
   },
   "libraries": {
+    "AspNetCoreRateLimit/5.0.0": {
+      "sha512": "6fq9+o1maGADUmpK/PvcF0DtXW2+7bSkIL7MDIo/agbIHKN8XkMQF4oze60DO731WaQmHmK260hB30FwPzCmEg==",
+      "type": "package",
+      "path": "aspnetcoreratelimit/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "aspnetcoreratelimit.5.0.0.nupkg.sha512",
+        "aspnetcoreratelimit.nuspec",
+        "lib/net6.0/AspNetCoreRateLimit.dll"
+      ]
+    },
     "Azure.Core/1.36.0": {
       "sha512": "vwqFZdHS4dzPlI7FFRkPx9ctA+aGGeRev3gnzG8lntWvKMmBhAmulABi1O9CEvS3/jzYt7yA+0pqVdxkpAd7dQ==",
       "type": "package",
@@ -4625,6 +4655,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "AspNetCoreRateLimit >= 5.0.0",
       "Azure.Identity >= 1.10.4",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.10",
       "Microsoft.AspNetCore.Mvc.Versioning >= 5.1.0",
@@ -4652,11 +4683,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
+      "projectUniqueName": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
       "projectName": "GestFinancas-Api",
-      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\GestFinancas-Api.csproj",
+      "projectPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\GestFinancas-Api.csproj",
       "packagesPath": "C:\\Users\\dscw\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\gestFinancas-api\\obj\\",
+      "outputPath": "C:\\Users\\dscw\\My Private Documents\\GestFinancas-app\\GestFinancas-Api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\dscw\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -4689,6 +4720,10 @@
       "net9.0": {
         "targetAlias": "net9.0",
         "dependencies": {
+          "AspNetCoreRateLimit": {
+            "target": "Package",
+            "version": "[5.0.0, )"
+          },
           "Azure.Identity": {
             "target": "Package",
             "version": "[1.10.4, )"

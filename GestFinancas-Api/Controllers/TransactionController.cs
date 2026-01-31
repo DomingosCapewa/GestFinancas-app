@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using GestFinancas_Api.Models;
+using Swashbuckle.AspNetCore.Annotations;
+
 using System;
 using System.Threading.Tasks;
 using System.Security.Claims;
+
+using GestFinancas_Api.Models;
 using GestFinancas_Api.Dtos;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace GestFinancas_Api.Controllers
 {
     [ApiController]
-    [Route("ai/Transaction")]
     [Route("api/Transaction")]
     public class TransactionController : ControllerBase
     {

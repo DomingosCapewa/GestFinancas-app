@@ -21,7 +21,8 @@ export class SignupComponent implements OnInit {
    this.signupForm = new FormGroup({
                       name: new FormControl('', Validators.required),
                       email: new FormControl('', [Validators.required, Validators.email]),
-                      password: new FormControl('', Validators.required),
+            password: new FormControl('', Validators.required),
+            acceptTerms: new FormControl(false, Validators.requiredTrue),
                 });
   }
 
@@ -37,7 +38,13 @@ export class SignupComponent implements OnInit {
       this.usuarioService.cadastrar(userObj).subscribe({
         next: (response) => {
           console.log('Cadastro realizado com sucesso', response);
-          this.router.navigate(['/login']);
+          this.usuarioService.registrarConsentimento('TermsAndPrivacy', 'v1', true).subscribe({
+            next: () => this.router.navigate(['/login']),
+            error: (error) => {
+              console.error('Erro ao registrar consentimento', error);
+              this.router.navigate(['/login']);
+            },
+          });
         },
         error: (error) => {
           console.error('Erro no cadastro', error);

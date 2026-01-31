@@ -11,8 +11,6 @@ public class Transaction {
 
 }
 
-
-
 public enum TransactionType
 {
     Income,

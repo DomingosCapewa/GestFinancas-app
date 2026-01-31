@@ -40,29 +40,6 @@ JULIUS: <sua frase sarcÃ¡stica sobre o gasto>
 """
 
     def chat(self, message: str, user_id: str, token: str = None):
-        msg_upper = message.upper().strip()
-
-        # --- FLUXO: CONFIRMAR ---
-        if msg_upper == "CONFIRMAR":
-            if user_id not in pending_drafts:
-                return "Julius: Confirmar o quê? Você não me deu nenhum recibo ainda!"
-            
-            draft_info = pending_drafts[user_id]
-            try:
-                confirm_transaction(draft_info["draft_id"], token)
-                amount = draft_info["amount"]
-                del pending_drafts[user_id]
-                return f"Julius: Tá bem, tá bem... Registrei esses R$ {amount:.2f}. Espero que você tenha o cupom fiscal!"
-            except Exception as e:
-                return f"Julius: O sistema tá fora do ar. Aposto que não pagaram a conta de luz! ({str(e)})"
-
-        # --- FLUXO: CANCELAR ---
-        if msg_upper == "CANCELAR":
-            if user_id in pending_drafts:
-                del pending_drafts[user_id]
-                return "Julius: Sábia decisão! Economizou 100% de desconto não comprando nada!"
-            return "Julius: Não tem nada para cancelar aqui, Chris."
-
         # --- FLUXO: GERAR RESPOSTA ---
         prompt = f"{self.system_prompt}\nUsuÃ¡rio: {message}"
         
@@ -113,10 +90,10 @@ JULIUS: <sua frase sarcÃ¡stica sobre o gasto>
                     "draft_id": result.get("draftId"),
                     "amount": amount
                 }
-                # Retornar apenas a mensagem do Julius, sem os marcadores
-                return f"Julius: {julius_fala}\n\n💰 R$ {amount:.2f} | {category}\n\n✅ Draft criado! Digite CONFIRMAR para salvar ou CANCELAR para desistir."
+                # Retornar apenas a mensagem do Julius, sem instruções
+                return f" {julius_fala}\n\nR$ {amount:.2f} | {category}\n\nDraft criado! Use os botões para confirmar ou rejeitar."
             except Exception as e:
-                return f"Julius: Tentei salvar mas o servidor soltou um erro: {str(e)}"
+                return f" Tentei salvar mas o servidor soltou um erro: {str(e)}"
         return text
 
 

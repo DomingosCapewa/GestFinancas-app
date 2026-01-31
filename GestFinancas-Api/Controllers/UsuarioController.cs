@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using GestFinancas_Api.Dtos;
 using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 
 using System.Security.Cryptography;
@@ -30,16 +32,18 @@ namespace GestFinancas.Controllers
     private readonly EnviarEmail _enviarEmail;
     private readonly IAuthenticate _authenticate;
     private readonly IConfiguration _configuration;
+    private readonly AppDbContext _db;
 
-    public UsuarioController(IUsuarioRepository usuarioRepository, IConfiguration configuration, IAuthenticate authenticate)
+    public UsuarioController(IUsuarioRepository usuarioRepository, IConfiguration configuration, IAuthenticate authenticate, AppDbContext db)
     {
       _usuarioRepository = usuarioRepository;
       _authenticate = authenticate;
       _configuration = configuration;
+      _db = db;
       _enviarEmail = new EnviarEmail(configuration, _usuarioRepository);
     }
 
-    // [Authorize]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     [SwaggerOperation(Summary = "Obtém todos os usuários cadastrados.", 
                       Description = "Este endpoint retorna uma lista de todos os usuários cadastrados no sistema.")]
@@ -90,6 +94,8 @@ namespace GestFinancas.Controllers
         return BadRequest(new { message = "Dados inválidos." });
       }
 
+      usuario.Role = "User";
+
       var emailExiste = await _usuarioRepository.BuscarUsuarioPorEmail(usuario.Email);
       if (emailExiste != null)
       {
@@ -115,13 +121,64 @@ namespace GestFinancas.Controllers
       return Ok(new { message = "Usuário cadastrado com sucesso", data = userToken });
     }
 
-    // [Authorize]
-    [HttpPut]
+    [HttpPost("promote-admin")]
+    [SwaggerOperation(Summary = "Promove um usuário a Admin.",
+                      Description = "Este endpoint promove um usuário a Admin. Requer role Admin ou AdminSetupKey quando não houver admin criado.")]
+    public async Task<IActionResult> PromoteAdmin([FromBody] PromoteAdminDto dto)
+    {
+      if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
+      {
+        return BadRequest(new { message = "Email é obrigatório." });
+      }
+
+      var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+      var isAdmin = string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase);
+
+      if (!isAdmin)
+      {
+        var adminExists = await _usuarioRepository.ExisteAdminAsync();
+        if (adminExists)
+        {
+          return Forbid();
+        }
+
+        var setupKey = Environment.GetEnvironmentVariable("ADMIN_SETUP_KEY") ?? _configuration["AdminSetupKey"];
+        var providedKey = Request.Headers["X-Admin-Setup-Key"].ToString();
+
+        if (string.IsNullOrEmpty(setupKey) || setupKey != providedKey)
+        {
+          return Unauthorized(new { message = "AdminSetupKey inválida ou ausente." });
+        }
+      }
+
+      var promovido = await _usuarioRepository.PromoverUsuarioAdminAsync(dto.Email);
+      if (!promovido)
+      {
+        return NotFound(new { message = "Usuário não encontrado." });
+      }
+
+      return Ok(new { message = "Usuário promovido a Admin com sucesso." });
+    }
+
+    [Authorize]
+    [HttpPut("atualizar-usuario")]
     public async Task<IActionResult> AtualizarUsuario([FromBody] Usuario usuario)
     {
       if (usuario == null || !usuario.IsValid())
       {
         return BadRequest(new { message = "Usuário inválido." });
+      }
+
+      var userIdString = User.FindFirst("id")?.Value;
+      var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+      if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+      {
+        return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+      }
+
+      if (!string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase) && usuario.Id != userId)
+      {
+        return Forbid();
       }
 
       var usuarioId = await _usuarioRepository.AtualizarUsuarioAsync(usuario);
@@ -134,7 +191,7 @@ namespace GestFinancas.Controllers
       return Ok(new { message = "Usuário atualizado com sucesso", data = usuarioId });
     }
 
-    [HttpPost("confirmar-reset-senha")]
+    [HttpPost("confirmar-reset-senha")] //ainda não usado
     [SwaggerOperation(Summary = "Confirma a redefinição de senha do usuário.", 
                       Description = "Este endpoint redefine a senha do usuário com base no token fornecido.")]
     public async Task<IActionResult> ConfirmarResetSenha([FromBody] RedefinirSenhaTokenDto dto)
@@ -155,6 +212,117 @@ namespace GestFinancas.Controllers
         return StatusCode(500, new { message = "Erro ao redefinir senha." });
 
       return Ok(new { message = "Senha redefinida com sucesso." });
+    }
+
+    [Authorize]
+    [HttpPost("consent")]
+    [SwaggerOperation(Summary = "Registra consentimento LGPD",
+                      Description = "Registra o consentimento do usuário para termos e política de privacidade.")]
+    public async Task<IActionResult> RegistrarConsentimento([FromBody] ConsentDto dto)
+    {
+      if (!ModelState.IsValid)
+      {
+        return BadRequest(ModelState);
+      }
+
+      var userIdString = User.FindFirst("id")?.Value;
+      if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+      {
+        return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+      }
+
+      var consent = new ConsentLog
+      {
+        Id = Guid.NewGuid(),
+        UserId = userId,
+        ConsentType = dto.ConsentType,
+        Version = dto.Version,
+        Accepted = dto.Accepted,
+        AcceptedAt = DateTime.UtcNow,
+        IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+        UserAgent = Request.Headers["User-Agent"].ToString()
+      };
+
+      _db.ConsentLogs.Add(consent);
+      await _db.SaveChangesAsync();
+
+      return Ok(new { message = "Consentimento registrado com sucesso." });
+    }
+
+    [Authorize]
+    [HttpGet("export-data")]
+    [SwaggerOperation(Summary = "Exporta dados do usuário",
+                      Description = "Exporta dados pessoais, transações e consentimentos do usuário autenticado.")]
+    public async Task<IActionResult> ExportarDados()
+    {
+      var userIdString = User.FindFirst("id")?.Value;
+      if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+      {
+        return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+      }
+
+      var usuario = await _db.Usuario.FindAsync(userId);
+      if (usuario == null || usuario.IsDeleted)
+      {
+        return NotFound(new { message = "Usuário não encontrado." });
+      }
+
+      var transactions = _db.Transactions.Where(t => t.UserId == userId).ToList();
+      var drafts = _db.DraftTransactions.Where(d => d.UserId == userId).ToList();
+      var consents = _db.ConsentLogs.Where(c => c.UserId == userId).ToList();
+
+      return Ok(new
+      {
+        usuario = new
+        {
+          usuario.Id,
+          usuario.Nome,
+          usuario.Email,
+          usuario.DataCadastro,
+          usuario.Role
+        },
+        transactions,
+        drafts,
+        consents
+      });
+    }
+
+    [Authorize]
+    [HttpDelete("delete-account")]
+    [SwaggerOperation(Summary = "Exclui conta do usuário",
+                      Description = "Exclui a conta e anonimiza dados do usuário autenticado.")]
+    public async Task<IActionResult> ExcluirConta()
+    {
+      var userIdString = User.FindFirst("id")?.Value;
+      if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+      {
+        return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+      }
+
+      var usuario = await _db.Usuario.FindAsync(userId);
+      if (usuario == null)
+      {
+        return NotFound(new { message = "Usuário não encontrado." });
+      }
+
+      if (!usuario.IsDeleted)
+      {
+        usuario.Nome = "Usuário Excluído";
+        usuario.Email = $"deleted_{usuario.Id}@gestfinancas.local";
+        usuario.SenhaHash = null;
+        usuario.SenhaSalt = null;
+        usuario.IsDeleted = true;
+        usuario.DeletedAt = DateTime.UtcNow;
+
+        var transactions = _db.Transactions.Where(t => t.UserId == userId);
+        var drafts = _db.DraftTransactions.Where(d => d.UserId == userId);
+        _db.Transactions.RemoveRange(transactions);
+        _db.DraftTransactions.RemoveRange(drafts);
+
+        await _db.SaveChangesAsync();
+      }
+
+      return Ok(new { message = "Conta excluída e dados anonimizados." });
     }
 
     private string GerarToken(Usuario usuario)
@@ -178,10 +346,5 @@ namespace GestFinancas.Controllers
       var token = tokenHandler.CreateToken(tokenDescriptor);
       return tokenHandler.WriteToken(token);
     }
-
-
-
-
-
   }
 }

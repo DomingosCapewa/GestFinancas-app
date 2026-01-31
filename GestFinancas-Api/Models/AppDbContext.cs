@@ -8,11 +8,11 @@ namespace GestFinancas_Api.Models
         {
         }
         public DbSet<Usuario> Usuarios { get; set; } = null!;
-        // compatibilidade com código existente que usa `Usuario` (singular)
         public DbSet<Usuario> Usuario => Usuarios;
         public DbSet<Transaction> Transactions { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
         public DbSet<DraftTransaction> DraftTransactions { get; set; } = null!;
+        public DbSet<ConsentLog> ConsentLogs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

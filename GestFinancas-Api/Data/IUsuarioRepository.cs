@@ -15,6 +15,8 @@ namespace GestFinancas_Api.Data
     Task<Usuario?> RecuperarSenha(string email);
     Task<Usuario?> BuscarUsuarioPorEmail(string email);
     Task<Usuario> BuscarUsuarioPorToken(string token);
+    Task<bool> ExisteAdminAsync();
+    Task<bool> PromoverUsuarioAdminAsync(string email);
 
     // Task<Usuario?> ResetarSenhaUsuario(string email, string novaSenha);
     // Task<int> DeleteUsuarioAsync(int id);

@@ -34,10 +34,17 @@ export class UsuarioService {
     senha: string;
   }): Observable<any> {
     console.log('Calling endpoint:', `${this.apiUrl}`);
-    const token = localStorage.setItem('token', 'true');
     return this.http
       .post(`${this.apiUrl}/cadastrar-usuario`, account)
-      .pipe(map((response) => response));
+      .pipe(
+        map((response: any) => {
+          const token = response?.data?.token;
+          if (token) {
+            localStorage.setItem('token', token);
+          }
+          return response;
+        })
+      );
   }
 
   login(email: string, senha: string): Observable<any> {
@@ -79,6 +86,12 @@ export class UsuarioService {
   refreshToken(): Observable<any> {
     return this.http
       .post(`${this.apiUrl}/refresh-token`, {})
+      .pipe(map((response) => response));
+  }
+
+  registrarConsentimento(consentType: string, version: string, accepted: boolean): Observable<any> {
+    return this.http
+      .post(`${this.apiUrl}/consent`, { consentType, version, accepted })
       .pipe(map((response) => response));
   }
   getToken(): string | null {

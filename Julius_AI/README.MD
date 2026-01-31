@@ -247,7 +247,7 @@ curl -X POST http://localhost:8000/chat \
 ### Resposta esperada
 ```json
 {
-  "response": "Supermercado de novo?! Tá comendo ouro?!\n\n✅ Draft criado! Digite CONFIRMAR para salvar."
+  "response": "Supermercado de novo?! Tá comendo ouro?!\n\n Draft criado! Digite CONFIRMAR para salvar."
 }
 ```
 

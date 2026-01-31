@@ -11,6 +11,14 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./pages/signup/signup.component').then(c => c.SignupComponent)
   },
   {
+    path: 'terms',
+    loadComponent: () => import('./pages/terms/terms.component').then(c => c.TermsComponent)
+  },
+  {
+    path: 'privacy',
+    loadComponent: () => import('./pages/privacy/privacy.component').then(c => c.PrivacyComponent)
+  },
+  {
     path: 'forgot-password',
     loadComponent: () => import('./pages/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent)
   },
