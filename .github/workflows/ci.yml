@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  api-build:
+    name: Build API (.NET)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: GestFinancas-Api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+  web-build:
+    name: Build Web (Angular)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gestFinancas-com-ia
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: gestFinancas-com-ia/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  ai-build:
+    name: Build AI (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Julius_AI
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Import check
+        run: python -c "import fastapi, pydantic"

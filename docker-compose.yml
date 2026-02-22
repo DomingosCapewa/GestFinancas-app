@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: gestfinancas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  api:
+    build:
+      context: ./GestFinancas-Api
+    container_name: gestfinancas-api
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      ADMIN_SETUP_KEY: ${ADMIN_SETUP_KEY}
+      SENTRY_DSN: ${SENTRY_DSN}
+    ports:
+      - "8080:8080"
+
+  ai:
+    build:
+      context: ./Julius_AI
+    container_name: gestfinancas-ai
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      DOTNET_API_BASE: ${DOTNET_API_BASE}
+      ALLOWED_ORIGINS: ${AI_ALLOWED_ORIGINS}
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ./gestFinancas-com-ia
+      args:
+        API_URL: ${PUBLIC_API_URL}
+    container_name: gestfinancas-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+
+volumes:
+  db_data:

@@ -12,8 +12,26 @@ using System.Security.Cryptography;
 using Microsoft.OpenApi.Models;
 using AspNetCoreRateLimit;
 using GestFinancas_Api.Middleware;
+using Serilog;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog
+Log.Logger = new LoggerConfiguration()
+  .ReadFrom.Configuration(builder.Configuration)
+  .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// Sentry
+builder.WebHost.UseSentry(o =>
+{
+  o.Dsn = Environment.GetEnvironmentVariable("SENTRY_DSN") ?? builder.Configuration["Sentry:Dsn"];
+  o.TracesSampleRate = builder.Environment.IsProduction() ? 0.1 : 1.0;
+  o.SendDefaultPii = false;
+  o.Environment = builder.Environment.EnvironmentName;
+});
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") 
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
@@ -108,6 +126,10 @@ builder.Services.AddApiVersioning(options =>
 
 builder.Services.AddControllers();
 
+// Health checks
+builder.Services.AddHealthChecks()
+  .AddDbContextCheck<AppDbContext>("Database");
+
 builder.Services.AddSwaggerGen(options =>
 {
   options.EnableAnnotations();
@@ -152,6 +174,8 @@ if (app.Environment.IsDevelopment())
 {
   app.UseDeveloperExceptionPage();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -201,5 +225,10 @@ app.UseAuthorization();
 
 
 app.MapControllers();
+
+// Health checks endpoint
+app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => true });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = _ => true });
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 
 app.Run();
