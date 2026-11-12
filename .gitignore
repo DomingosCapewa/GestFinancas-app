@@ -1,19 +1,14 @@
-﻿# ============================================
-# GestFinancas - .gitignore
-# ============================================
-
-# ============ SECRETS & CREDENTIALS ============
-# CRÍTICO: Nunca commitar credenciais!
+﻿# Secrets & configuration
 .env
 .env.*
 !.env.example
-*.env
+
 appsettings.json
 appsettings.*.json
-!appsettings.Production.json
+!appsettings.example.json
+
 secrets.json
 *.secrets
-
 # ============ Node / Angular ============
 node_modules/
 dist/
